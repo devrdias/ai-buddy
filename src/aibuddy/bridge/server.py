@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import hmac
+import json
 from typing import Callable
 
 from aiohttp import web
 
+from ..core.approval import ApprovalBroker, ApprovalRequest
 from ..core.events import Event
 from ..core.status import DISCONNECTED_FRAMES, StatusTracker, frames_for_event
+from ..core.summary import approval_summary
 from ..proxy.inject import Injector
 
 # Claude Code hook event name -> buddy event type.
@@ -23,11 +26,18 @@ HOOK_EVENT_TYPES = {
 }
 
 
-def make_app(*, token: str, on_event: Callable[[Event], None]) -> web.Application:
+APPROVAL_TIMEOUT_CAP_S = 120.0
+
+
+def _authorized(request: web.Request, token: str) -> bool:
+    supplied = request.headers.get("Authorization", "")
+    return hmac.compare_digest(supplied, f"Bearer {token}")
+
+
+def make_app(*, token: str, on_event: Callable[[Event], None],
+             broker: ApprovalBroker | None = None) -> web.Application:
     async def post_event(request: web.Request) -> web.Response:
-        expected = f"Bearer {token}"
-        supplied = request.headers.get("Authorization", "")
-        if not hmac.compare_digest(supplied, expected):
+        if not _authorized(request, token):
             return web.Response(status=401)
         try:
             body = await request.json()
@@ -44,9 +54,57 @@ def make_app(*, token: str, on_event: Callable[[Event], None]) -> web.Applicatio
         on_event(event)
         return web.Response(status=204)
 
+    async def post_approval(request: web.Request) -> web.Response:
+        if not _authorized(request, token):
+            return web.Response(status=401)
+        try:
+            body = await request.json()
+        except (ValueError, UnicodeDecodeError):
+            return web.Response(status=400)
+        if not isinstance(body, dict):
+            return web.Response(status=400)
+        try:
+            timeout_s = min(float(body.get("timeout_s", 60)), APPROVAL_TIMEOUT_CAP_S)
+        except (TypeError, ValueError):
+            return web.Response(status=400)
+        if timeout_s <= 0:
+            return web.Response(status=400)
+        tool = str(body.get("tool_name") or "tool")
+        summary, risk = approval_summary(tool, body.get("tool_input"))
+        req = ApprovalRequest.create(session_id=str(body.get("session_id") or "default"), tool_name=tool,
+                                     summary=summary, risk=risk, timeout_s=timeout_s)
+        state = await broker.request(req)
+        return web.json_response({"outcome": state, "reason": req.reason})
+
     app = web.Application()
     app.router.add_post("/v1/event", post_event)
+    if broker is not None:
+        app.router.add_post("/v1/approval", post_approval)
     return app
+
+
+def device_reply_handler(broker: ApprovalBroker) -> Callable[[str], bool]:
+    """Consume the device's answers to AI Buddy's own prompts (ids starting bb-). Hermes prompts are not consumed."""
+    def handle(text: str) -> bool:
+        try:
+            frame = json.loads(text)
+        except ValueError:
+            return False
+        if not (isinstance(frame, dict) and frame.get("type") == "prompt.reply"):
+            return False
+        prompt_id = str(frame.get("id") or "")
+        if not prompt_id.startswith("bb-"):
+            return False
+        answer = frame.get("answer")
+        if answer == "yes":
+            broker.answer(prompt_id, approve=True, source="button")
+        elif answer == "no":
+            broker.answer(prompt_id, approve=False, source="button")
+        else:
+            broker.defer_prompt(prompt_id, "malformed answer")
+        return True
+
+    return handle
 
 
 def publish_event(event: Event, *, tracker: StatusTracker, injector: Injector) -> None:

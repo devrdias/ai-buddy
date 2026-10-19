@@ -12,11 +12,13 @@ from aiohttp import web
 from websockets.asyncio.server import serve
 
 from . import __version__
-from .bridge.server import announce_staleness, make_app, publish_event
+from .bridge.server import announce_staleness, device_reply_handler, make_app, publish_event
 from .bridge.token import DEFAULT_TOKEN_PATH, load_or_create_token
+from .core.approval import ApprovalBroker
 from .core.config import Config, ConfigError, load_config
 from .core.status import StatusTracker
 from .proxy.inject import Injector
+from .proxy.observe import transcript_observer
 from .proxy.relay import GadgetRelay
 
 
@@ -33,9 +35,12 @@ async def _run(config: Config, token_path: Path) -> None:
     token = load_or_create_token(token_path)
     injector = Injector()
     tracker = StatusTracker()
+    broker = ApprovalBroker(on_prompt=injector.publish_prompt, on_close=injector.clear_prompt)
     relay = GadgetRelay(upstream_url=config.upstream_url, upstream_token=config.upstream_token,
-                        injector=injector)
-    app = make_app(token=token, on_event=lambda event: publish_event(event, tracker=tracker, injector=injector))
+                        injector=injector, reply_handler=device_reply_handler(broker),
+                        observer=transcript_observer(broker))
+    app = make_app(token=token, broker=broker,
+                   on_event=lambda event: publish_event(event, tracker=tracker, injector=injector))
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, "127.0.0.1", config.bridge_port).start()

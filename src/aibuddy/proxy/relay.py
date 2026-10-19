@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from typing import Any
+from typing import Any, Callable
 
 from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosed, WebSocketException
@@ -27,10 +27,16 @@ INTERNAL_ERROR = 1011
 
 class GadgetRelay:
     def __init__(self, *, upstream_url: str, upstream_token: str | None = None,
-                 injector: Injector | None = None) -> None:
+                 injector: Injector | None = None,
+                 reply_handler: Callable[[str], bool] | None = None,
+                 observer: Callable[[str], list[str]] | None = None) -> None:
         self.upstream_url = upstream_url
         self.upstream_token = upstream_token
         self.injector = injector
+        # reply_handler consumes device frames that belong to AI Buddy (True = do not forward to Hermes).
+        self.reply_handler = reply_handler
+        # observer sees Hermes frames and may return frames to send back upstream (for example cancel).
+        self.observer = observer
 
     async def handle(self, device: Any) -> None:
         """Serve one device connection by pairing it with a fresh upstream connection."""
@@ -79,7 +85,12 @@ class GadgetRelay:
         try:
             async for message in source:
                 if to_upstream and isinstance(message, str):
+                    if self.reply_handler is not None and self.reply_handler(message):
+                        continue
                     message = self._rewrite_hello(message)
+                if not to_upstream and isinstance(message, str) and self.observer is not None:
+                    for frame in self.observer(message):
+                        await source.send(frame)
                 if on_frame is not None and isinstance(message, str) and _is_welcome(message):
                     await target.send(message)
                     on_frame.set()
