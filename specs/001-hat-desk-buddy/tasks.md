@@ -218,8 +218,8 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 - [x] T070 [P] Write README with vision, quickstart, and credits to RegeneratusLabs/physical-hermes, the Hermes Gadget SDK, and xiaozhi-esp32 in `README.md`
 - [x] T071 [P] Add `THIRD_PARTY_NOTICES.md` listing the SDK (MIT) and confirming no code is copied, in `THIRD_PARTY_NOTICES.md`
 - [x] T072 Run the full test suite `pytest tests/` and fix any failures in the affected modules
-- [ ] T073 Validate every step in `specs/001-hat-desk-buddy/quickstart.md` by hand and update the document if a command differs
-- [ ] T074 Re-run the constitution check in `specs/001-hat-desk-buddy/plan.md` against the implemented code and record any deviation
+- [x] T073 Validate every step in `specs/001-hat-desk-buddy/quickstart.md` by hand and update the document if a command differs
+- [x] T074 Re-run the constitution check in `specs/001-hat-desk-buddy/plan.md` against the implemented code and record any deviation
 
 ---
 

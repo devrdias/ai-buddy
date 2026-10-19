@@ -100,3 +100,16 @@ upstream SDK and are consumed as external tools (constitution V, simulator-first
 ## Complexity Tracking
 
 > No constitution violations to justify.
+
+## Post-implementation constitution check (T074)
+
+Checked against the code on branch `main` at commit 7904d8d:
+
+- **I. Local-First:** PASS. Everything runs on the host. The bridge binds to loopback, and LAN listening needs `AIBUDDY_ALLOW_LAN=true`.
+- **II. Never Auto-Approve:** PASS. Only `touch` and `button` approve (`core/approval.py`). Voice can only deny. Timeouts, disconnects and malformed answers defer, and the hook prints no decision for them.
+- **III. Simulator-First:** PASS. The approval, status and hat paths were exercised on the simulator before any hardware work.
+- **IV. Hats Are Plain Files:** PASS. Hats load from `hats/` with no code changes, and broken hats are reported without crashing.
+- **V. Credit and Respect Inspirations:** PASS. Credits are in the README and `THIRD_PARTY_NOTICES.md`. No upstream code is copied.
+
+Open items against the plan: T061 (text-only fallback notice) and T062 (hat voice mapping) are not built. T062 also depends on Hermes exposing voice options.
+

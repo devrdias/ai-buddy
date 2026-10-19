@@ -28,7 +28,7 @@ Expected (US2, SC-003): no path prints `allow` unless yes was pressed.
 `aibuddy hat use sentinel` and repeat step 2: wording and image differ from `geek` (US3, SC-004). `aibuddy hats --check` reports a deliberately broken hat and the default hat takes over.
 
 ## 5. Real Claude Code (optional)
-`aibuddy install-hooks --dry-run` shows the exact hook config; apply it, run a Claude Code task that needs a permission, and answer on the simulator.
+Add the hooks from the README's Quick start to `.claude/settings.json` (`PermissionRequest` with a timeout of 70). Run a Claude Code task that needs a permission, and answer on the simulator.
 
 ## 6. Real device (later)
-Follow `docs/setup-device.md` (flash the SpotPear 1.28" profile via the SDK installer, join Wi-Fi, point it at the AI Buddy listen address).
+Follow [docs/setup-device.md](../../docs/setup-device.md) (flash the SpotPear 1.28" profile via the SDK installer, join Wi-Fi, point it at the AI Buddy listen address).
