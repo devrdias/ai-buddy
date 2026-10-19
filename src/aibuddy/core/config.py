@@ -22,6 +22,7 @@ class Config:
     upstream_url: str = DEFAULT_UPSTREAM
     listen_host: str = "127.0.0.1"
     listen_port: int = 8770
+    bridge_port: int = 8771
     upstream_token: str | None = field(default=None, repr=False)
     hats_dir: Path = Path("hats")
     allow_lan: bool = False
@@ -47,6 +48,7 @@ _ENV = {
     "AIBUDDY_UPSTREAM_URL": "upstream_url",
     "AIBUDDY_LISTEN_HOST": "listen_host",
     "AIBUDDY_LISTEN_PORT": "listen_port",
+    "AIBUDDY_BRIDGE_PORT": "bridge_port",
     "AIBUDDY_UPSTREAM_TOKEN": "upstream_token",
     "AIBUDDY_HATS_DIR": "hats_dir",
     "AIBUDDY_ALLOW_LAN": "allow_lan",
@@ -65,8 +67,9 @@ def load_config(*, env: Mapping[str, str] | None = None, file: Path | None = Non
     for var, key in _ENV.items():
         if var in source:
             values[key] = source[var]
-    if "listen_port" in values:
-        values["listen_port"] = int(values["listen_port"])
+    for key in ("listen_port", "bridge_port"):
+        if key in values:
+            values[key] = int(values[key])
     if "allow_lan" in values:
         values["allow_lan"] = str(values["allow_lan"]).lower() in {"1", "true", "yes", "on"}
     if "hats_dir" in values:
