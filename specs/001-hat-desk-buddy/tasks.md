@@ -207,7 +207,7 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 - [ ] T067 [US6] Write the device setup guide `docs/setup-device.md`, pointing at the SDK installer for flashing and the AI Buddy listen address for connection
 - [ ] T068 [P] [US6] Write the porting guide `docs/porting.md` for other boards, referencing the SDK porting docs
-- [ ] T069 [US6] Add a `aibuddy doctor` command in `src/aibuddy/cli.py` that checks the listen address, token file, and upstream reachability
+- [x] T069 [US6] Add a `aibuddy doctor` command in `src/aibuddy/cli.py` that checks the listen address, token file, and upstream reachability
 
 **Checkpoint**: US6 documented and checkable.
 

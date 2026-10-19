@@ -76,6 +76,20 @@ def _hats(args) -> int:
     return 1 if args.check and library.problems else 0
 
 
+def _doctor(args) -> int:
+    from .doctor import run_checks
+
+    try:
+        config = load_config(file=args.config)
+    except ConfigError as exc:
+        print(f"FAIL  configuration: {exc}")
+        return 1
+    checks = run_checks(config, token_path=args.token_file, hats_dir=args.hats_dir)
+    for name, ok, detail in checks:
+        print(f"{'OK  ' if ok else 'FAIL'}  {name}: {detail}")
+    return 0 if all(ok for _, ok, _ in checks) else 1
+
+
 def _use_hat(args) -> int:
     library = load_hats(args.hats_dir)
     if args.hat_id not in library.hats:
@@ -96,6 +110,10 @@ def main(argv: list[str] | None = None) -> int:
     hats = sub.add_parser("hats", help="list hats and report problems")
     hats.add_argument("--hats-dir", type=Path, default=Path("hats"))
     hats.add_argument("--check", action="store_true", help="exit 1 when any hat has a problem")
+    doctor = sub.add_parser("doctor", help="check the setup and explain any failure")
+    doctor.add_argument("--config", type=Path, help="YAML config file")
+    doctor.add_argument("--token-file", type=Path, default=DEFAULT_TOKEN_PATH)
+    doctor.add_argument("--hats-dir", type=Path, default=Path("hats"))
     use = sub.add_parser("hat", help="choose the active hat")
     use.add_argument("action", choices=["use"])
     use.add_argument("hat_id")
@@ -105,6 +123,8 @@ def main(argv: list[str] | None = None) -> int:
         return _hats(args)
     if args.command == "hat":
         return _use_hat(args)
+    if args.command == "doctor":
+        return _doctor(args)
     if args.command != "run":
         parser.print_help()
         return 0
