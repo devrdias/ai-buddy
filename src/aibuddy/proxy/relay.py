@@ -23,6 +23,7 @@ from .inject import Injector
 log = logging.getLogger("aibuddy.relay")
 
 INTERNAL_ERROR = 1011
+SUBPROTOCOL = "hermes-gadget.v1"  # the Hermes gadget hub refuses handshakes that do not offer it
 
 
 class GadgetRelay:
@@ -41,7 +42,7 @@ class GadgetRelay:
     async def handle(self, device: Any) -> None:
         """Serve one device connection by pairing it with a fresh upstream connection."""
         try:
-            async with connect(self.upstream_url) as upstream:
+            async with connect(self.upstream_url, subprotocols=[SUBPROTOCOL]) as upstream:
                 log.info("device connected; upstream %s", self.upstream_url)
                 await self._pipe(device, upstream)
         except (OSError, WebSocketException) as exc:
