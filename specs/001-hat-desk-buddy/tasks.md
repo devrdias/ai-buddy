@@ -106,25 +106,25 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 ### Tests first for User Story 2 (approval state machine, Principle II)
 
-- [ ] T030 [P] [US2] Write state machine tests for `pending → approved` only on explicit approve in `tests/unit/test_approval_state.py`
-- [ ] T031 [P] [US2] Write state machine tests for `pending → denied` on explicit deny (touch, button, or voice deny phrase) in `tests/unit/test_approval_state.py`
-- [ ] T032 [P] [US2] Write state machine tests asserting `pending → deferred` on timeout, device offline, proxy error, malformed answer, and superseded or withdrawn requests in `tests/unit/test_approval_state.py`
-- [ ] T033 [P] [US2] Write state machine tests asserting a voice transcript can never produce `approved`, in `tests/unit/test_approval_state.py`
-- [ ] T034 [P] [US2] Write state machine tests asserting high-risk or multi-line requests have no approve path and go straight to `deferred`, in `tests/unit/test_approval_state.py`
-- [ ] T035 [P] [US2] Write state machine tests asserting terminal states are final and late answers are ignored, in `tests/unit/test_approval_state.py`
-- [ ] T036 [P] [US2] Write contract tests for `/v1/approval` (long-poll, outcome values, bearer token) in `tests/contract/test_approval_endpoint.py`
-- [ ] T037 [P] [US2] Write contract tests for `aibuddy-hook PermissionRequest` output rules: `allow` only on approved, `deny` only on denied, no output otherwise, never `updatedInput` or `updatedPermissions`, in `tests/contract/test_permission_hook_output.py`
-- [ ] T038 [P] [US2] Write integration test for the device approval flow (fake device answers `bb-` prompt with yes/no; Hermes prompt replies are relayed untouched) in `tests/integration/test_approval_flow.py`
+- [x] T030 [P] [US2] Write state machine tests for `pending → approved` only on explicit approve in `tests/unit/test_approval_state.py`
+- [x] T031 [P] [US2] Write state machine tests for `pending → denied` on explicit deny (touch, button, or voice deny phrase) in `tests/unit/test_approval_state.py`
+- [x] T032 [P] [US2] Write state machine tests asserting `pending → deferred` on timeout, device offline, proxy error, malformed answer, and superseded or withdrawn requests in `tests/unit/test_approval_state.py`
+- [x] T033 [P] [US2] Write state machine tests asserting a voice transcript can never produce `approved`, in `tests/unit/test_approval_state.py`
+- [x] T034 [P] [US2] Write state machine tests asserting high-risk or multi-line requests have no approve path and go straight to `deferred`, in `tests/unit/test_approval_state.py`
+- [x] T035 [P] [US2] Write state machine tests asserting terminal states are final and late answers are ignored, in `tests/unit/test_approval_state.py`
+- [x] T036 [P] [US2] Write contract tests for `/v1/approval` (long-poll, outcome values, bearer token) in `tests/contract/test_approval_endpoint.py`
+- [x] T037 [P] [US2] Write contract tests for `aibuddy-hook PermissionRequest` output rules: `allow` only on approved, `deny` only on denied, no output otherwise, never `updatedInput` or `updatedPermissions`, in `tests/contract/test_permission_hook_output.py`
+- [x] T038 [P] [US2] Write integration test for the device approval flow (fake device answers `bb-` prompt with yes/no; Hermes prompt replies are relayed untouched) in `tests/integration/test_approval_flow.py`
 
 ### Implementation for User Story 2 (after T030–T038 fail)
 
-- [ ] T039 [US2] Implement the ApprovalRequest state machine in `src/aibuddy/core/approval.py`, making T030–T035 pass
-- [ ] T040 [US2] Implement the `/v1/approval` long-poll endpoint in `src/aibuddy/bridge/server.py`, making T036 pass
-- [ ] T041 [US2] Implement the `aibuddy-hook PermissionRequest` path with fail-closed output rules in `src/aibuddy/bridge/hook_cli.py`, making T037 pass
-- [ ] T042 [US2] Implement `bb-` prompt injection and `prompt.reply` consumption (reserved prefix, not forwarded to Hermes) in `src/aibuddy/proxy/inject.py` and `src/aibuddy/proxy/relay.py`, making T038 pass
-- [ ] T043 [US2] Implement one-outstanding-prompt queueing per device (oldest first, `prompt.close` on withdrawal) in `src/aibuddy/core/approval.py`
-- [ ] T044 [US2] Implement the risk classifier and summary builder (tool name plus truncated, redacted input; never the raw input) in `src/aibuddy/core/summary.py`
-- [ ] T045 [US2] Implement voice-deny handling: a `transcript` matching a deny phrase while pending resolves as denied, per the timing from spike T004, in `src/aibuddy/proxy/observe.py`
+- [x] T039 [US2] Implement the ApprovalRequest state machine in `src/aibuddy/core/approval.py`, making T030–T035 pass
+- [x] T040 [US2] Implement the `/v1/approval` long-poll endpoint in `src/aibuddy/bridge/server.py`, making T036 pass
+- [x] T041 [US2] Implement the `aibuddy-hook PermissionRequest` path with fail-closed output rules in `src/aibuddy/bridge/hook_cli.py`, making T037 pass
+- [x] T042 [US2] Implement `bb-` prompt injection and `prompt.reply` consumption (reserved prefix, not forwarded to Hermes) in `src/aibuddy/proxy/inject.py` and `src/aibuddy/proxy/relay.py`, making T038 pass
+- [x] T043 [US2] Implement one-outstanding-prompt queueing per device (oldest first, `prompt.close` on withdrawal) in `src/aibuddy/core/approval.py`
+- [x] T044 [US2] Implement the risk classifier and summary builder (tool name plus truncated, redacted input; never the raw input) in `src/aibuddy/core/summary.py`
+- [x] T045 [US2] Implement voice-deny handling: a `transcript` matching a deny phrase while pending resolves as denied, per the timing from spike T004, in `src/aibuddy/proxy/observe.py`
 
 **Checkpoint**: US2 works in the simulator (quickstart §3). Every non-explicit path defers.
 
