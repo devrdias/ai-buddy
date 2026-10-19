@@ -78,19 +78,19 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 ### Tests for User Story 1
 
-- [ ] T020 [P] [US1] Write unit tests for the status-to-face mapping (event type → face state, including disconnected) in `tests/unit/test_status_mapping.py`
-- [ ] T021 [P] [US1] Write contract tests for `/v1/event` request and response (204, token required, malformed body ignored) in `tests/contract/test_event_endpoint.py`, from `specs/001-hat-desk-buddy/contracts/hook-bridge.md`
-- [ ] T022 [P] [US1] Write integration test: fake device receives `status` and `display` after a posted event, via the proxy in `tests/integration/test_status_flow.py`
+- [x] T020 [P] [US1] Write unit tests for the status-to-face mapping (event type → face state, including disconnected) in `tests/unit/test_status_mapping.py`
+- [x] T021 [P] [US1] Write contract tests for `/v1/event` request and response (204, token required, malformed body ignored) in `tests/contract/test_event_endpoint.py`, from `specs/001-hat-desk-buddy/contracts/hook-bridge.md`
+- [x] T022 [P] [US1] Write integration test: fake device receives `status` and `display` after a posted event, via the proxy in `tests/integration/test_status_flow.py`
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Implement status-to-face mapping in `src/aibuddy/core/status.py`, making T020 pass
-- [ ] T024 [US1] Implement the loopback HTTP endpoint with bearer token auth for `/v1/event` in `src/aibuddy/bridge/server.py`, making T021 pass
-- [ ] T025 [US1] Implement token file creation (mode 0600) at `~/.config/aibuddy/token` in `src/aibuddy/bridge/token.py`
-- [ ] T026 [US1] Implement the injection of `status` and `display` messages into the device leg in `src/aibuddy/proxy/inject.py`, making T022 pass
-- [ ] T027 [US1] Implement the `aibuddy-hook` CLI for status events (reads stdin JSON, posts to the endpoint, always exits 0) in `src/aibuddy/bridge/hook_cli.py`
-- [ ] T028 [US1] Implement `aibuddy run` in `src/aibuddy/cli.py` to start the proxy and endpoint together
-- [ ] T029 [US1] Implement the disconnected state: when the device is not connected, the status endpoint records the last event and the face returns to disconnected on reconnect, in `src/aibuddy/core/status.py`
+- [x] T023 [US1] Implement status-to-face mapping in `src/aibuddy/core/status.py`, making T020 pass
+- [x] T024 [US1] Implement the loopback HTTP endpoint with bearer token auth for `/v1/event` in `src/aibuddy/bridge/server.py`, making T021 pass
+- [x] T025 [US1] Implement token file creation (mode 0600) at `~/.config/aibuddy/token` in `src/aibuddy/bridge/token.py`
+- [x] T026 [US1] Implement the injection of `status` and `display` messages into the device leg in `src/aibuddy/proxy/inject.py`, making T022 pass
+- [x] T027 [US1] Implement the `aibuddy-hook` CLI for status events (reads stdin JSON, posts to the endpoint, always exits 0) in `src/aibuddy/bridge/hook_cli.py`
+- [x] T028 [US1] Implement `aibuddy run` in `src/aibuddy/cli.py` to start the proxy and endpoint together
+- [x] T029 [US1] Implement the disconnected state: when the device is not connected, the status endpoint records the last event and the face returns to disconnected on reconnect, in `src/aibuddy/core/status.py` — done: the tracker reports the stale transition once, `announce_staleness` pushes a `Disconnected` status frame, the device watcher in `aibuddy run` checks every 15 s, and reconnecting devices replay the current state.
 
 **Checkpoint**: US1 works in the simulator (quickstart §2). This is the MVP.
 
