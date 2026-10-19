@@ -1,0 +1,9 @@
+{
+  "hook_event_name": "PermissionRequest",
+  "session_id": "abc123",
+  "cwd": "/Users/example/projects/demo",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "npm test"
+  }
+}
