@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+build/
+dist/
+
+# Local AI Buddy state: tokens and config must never be committed
+.aibuddy/
+*.token
+config.local.yaml
+hats/*/local/
