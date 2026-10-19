@@ -111,5 +111,5 @@ Checked against the code on branch `main` at commit 7904d8d:
 - **IV. Hats Are Plain Files:** PASS. Hats load from `hats/` with no code changes, and broken hats are reported without crashing.
 - **V. Credit and Respect Inspirations:** PASS. Credits are in the README and `THIRD_PARTY_NOTICES.md`. No upstream code is copied.
 
-Open items against the plan: T061 (text-only fallback notice) and T062 (hat voice mapping) are not built. T062 also depends on Hermes exposing voice options.
+Open items against the plan: none. T061 (text-only fallback notice) is built. T062 (hat voice mapping) is closed as not applicable for v1, because Hermes exposes no per-chat voice option.
 

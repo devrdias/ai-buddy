@@ -173,7 +173,7 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 - [x] T060 [US4] Ensure the relay preserves binary audio channel frames in both directions in `src/aibuddy/proxy/relay.py`, making T058 pass
 - [x] T061 [US4] Implement the no-voice-engine fallback: when Hermes sends text only, show text and a notice explaining voice is not configured, in `src/aibuddy/proxy/inject.py`
-- [ ] T062 [US4] Map hat voice settings to Hermes voice options passed through, in `src/aibuddy/brain/hermes.py`
+- [x] T062 [US4] Map hat voice settings to Hermes voice options passed through, in `src/aibuddy/brain/hermes.py` — closed for v1 as not applicable: Hermes voice settings (stt, tts, streaming, auto-tts) are global to the gateway, and the gadget protocol has no per-chat voice option. Hat voices stay as wording and images. Revisit if Hermes exposes a per-chat voice command.
 - [x] T063 [US4] Implement cancel relay (device `cancel` to Hermes) in `src/aibuddy/proxy/relay.py`, making T059 pass
 
 **Checkpoint**: US4 works with Hermes voice configured. Text-only fallback works without it.
