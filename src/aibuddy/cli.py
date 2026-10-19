@@ -15,6 +15,8 @@ from . import __version__
 from .bridge.server import announce_staleness, device_reply_handler, make_app, publish_event
 from .bridge.token import DEFAULT_TOKEN_PATH, load_or_create_token
 from .core.approval import ApprovalBroker
+from .hats.active import read_active, write_active
+from .hats.loader import load_hats
 from .core.config import Config, ConfigError, load_config
 from .core.status import StatusTracker
 from .proxy.inject import Injector
@@ -33,6 +35,7 @@ async def _watch_staleness(tracker: StatusTracker, injector: Injector) -> None:
 
 async def _run(config: Config, token_path: Path) -> None:
     token = load_or_create_token(token_path)
+    library = load_hats(config.hats_dir)
     injector = Injector()
     tracker = StatusTracker()
     broker = ApprovalBroker(on_prompt=injector.publish_prompt, on_close=injector.clear_prompt)
@@ -40,7 +43,8 @@ async def _run(config: Config, token_path: Path) -> None:
                         injector=injector, reply_handler=device_reply_handler(broker),
                         observer=transcript_observer(broker))
     app = make_app(token=token, broker=broker,
-                   on_event=lambda event: publish_event(event, tracker=tracker, injector=injector))
+                   on_event=lambda event: publish_event(event, tracker=tracker, injector=injector,
+                                                        library=library, active=read_active))
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, "127.0.0.1", config.bridge_port).start()
@@ -56,6 +60,27 @@ async def _run(config: Config, token_path: Path) -> None:
             await runner.cleanup()
 
 
+def _hats(args) -> int:
+    library = load_hats(args.hats_dir)
+    for hat in sorted(library.hats.values(), key=lambda h: (-h.priority, h.id)):
+        print(f"{hat.id:<12} {hat.name:<12} priority {hat.priority}")
+        for warning in hat.warnings:
+            print(f"  warning: {warning}")
+    for problem in library.problems:
+        print(f"  problem in {problem.hat_id}: {problem.message}")
+    return 1 if args.check and library.problems else 0
+
+
+def _use_hat(args) -> int:
+    library = load_hats(args.hats_dir)
+    if args.hat_id not in library.hats:
+        print(f"aibuddy: no hat named {args.hat_id!r} in {args.hats_dir}", file=sys.stderr)
+        return 2
+    write_active(args.hat_id)
+    print(f"active hat: {args.hat_id}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="aibuddy", description="AI Buddy desk companion")
     parser.add_argument("--version", action="version", version=__version__)
@@ -63,7 +88,18 @@ def main(argv: list[str] | None = None) -> int:
     run = sub.add_parser("run", help="start the device relay and the local hook bridge")
     run.add_argument("--config", type=Path, help="YAML config file (environment variables override it)")
     run.add_argument("--token-file", type=Path, default=DEFAULT_TOKEN_PATH)
+    hats = sub.add_parser("hats", help="list hats and report problems")
+    hats.add_argument("--hats-dir", type=Path, default=Path("hats"))
+    hats.add_argument("--check", action="store_true", help="exit 1 when any hat has a problem")
+    use = sub.add_parser("hat", help="choose the active hat")
+    use.add_argument("action", choices=["use"])
+    use.add_argument("hat_id")
+    use.add_argument("--hats-dir", type=Path, default=Path("hats"))
     args = parser.parse_args(argv)
+    if args.command == "hats":
+        return _hats(args)
+    if args.command == "hat":
+        return _use_hat(args)
     if args.command != "run":
         parser.print_help()
         return 0

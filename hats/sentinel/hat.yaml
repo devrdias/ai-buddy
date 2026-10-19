@@ -1,0 +1,14 @@
+format: 1
+name: Sentinel
+priority: 90
+persona: persona.md
+reactions:
+  - when: waiting
+    say: "Needs you. Review on the computer."
+    face: waiting
+  - when: error
+    say: "Alert: {summary}"
+    face: error
+  - when: done
+    say: "Task complete."
+    face: done

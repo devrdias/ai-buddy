@@ -1,0 +1,14 @@
+format: 1
+name: Coach
+priority: 30
+persona: persona.md
+reactions:
+  - when: done
+    say: "Nice work. Stretch break?"
+    face: done
+  - when: working
+    say: "Keep going, you've got this."
+    face: working
+  - when: error
+    say: "Setbacks are data. Reset and retry."
+    face: error

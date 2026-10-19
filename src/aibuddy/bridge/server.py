@@ -10,7 +10,9 @@ from aiohttp import web
 
 from ..core.approval import ApprovalBroker, ApprovalRequest
 from ..core.events import Event
-from ..core.status import DISCONNECTED_FRAMES, StatusTracker, frames_for_event
+from ..core.status import DISCONNECTED_FRAMES, StatusTracker, face_state_for, frames_for_event
+from ..hats.faces import face_frames
+from ..hats.loader import HatLibrary
 from ..core.summary import approval_summary
 from ..proxy.inject import Injector
 
@@ -107,10 +109,18 @@ def device_reply_handler(broker: ApprovalBroker) -> Callable[[str], bool]:
     return handle
 
 
-def publish_event(event: Event, *, tracker: StatusTracker, injector: Injector) -> None:
-    """Record an event and push its frames to every attached device."""
+def publish_event(event: Event, *, tracker: StatusTracker, injector: Injector,
+                  library: HatLibrary | None = None, active: Callable[[], str] | None = None,
+                  stream: int = 1) -> None:
+    """Record an event and push its frames to every attached device, in the active hat's voice and face."""
     tracker.record(event, now=event.ts)
-    injector.publish(frames_for_event(event))
+    hat = library.get(active()) if library is not None and active is not None else None
+    frames: list[dict | bytes] = list(frames_for_event(event, hat))
+    if library is not None:
+        face = library.face_path(hat or library.default, face_state_for(event, hat))
+        if face is not None:
+            frames += face_frames(str(face), stream)
+    injector.publish(frames)
 
 
 def announce_staleness(tracker: StatusTracker, injector: Injector, *, now: float) -> bool:

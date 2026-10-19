@@ -74,7 +74,10 @@ class GadgetRelay:
         try:
             while True:
                 frame = await queue.get()
-                await device.send(json.dumps(frame, separators=(",", ":")))
+                if isinstance(frame, bytes):
+                    await device.send(frame)
+                else:
+                    await device.send(json.dumps(frame, separators=(",", ":")))
         except ConnectionClosed:
             return
         finally:

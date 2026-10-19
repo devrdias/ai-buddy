@@ -1,0 +1,14 @@
+format: 1
+name: Geek
+priority: 50
+persona: persona.md
+reactions:
+  - when: done
+    say: "Build's green. Ship it."
+    face: done
+  - when: error
+    say: "Segfault in {session}. Classic."
+    face: error
+  - when: working
+    say: "Compiling in my head..."
+    face: working
