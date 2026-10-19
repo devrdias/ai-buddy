@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from ..hats.templates import render
 from .events import Event
 
 FACES = frozenset({"idle", "working", "waiting", "done", "error", "disconnected"})
@@ -39,9 +40,36 @@ def face_for_event(event: Event) -> str:
     return _FACE_FOR_TYPE[event.type]
 
 
-def frames_for_event(event: Event) -> list[dict]:
-    """Frames the device should show for ``event``: a status phrase, plus a card for noteworthy events."""
+URGENCY_RANK = {"low": 0, "normal": 1, "urgent": 2}
+
+
+def reaction_for(event: Event, hat) -> object | None:
+    """The hat's first reaction that matches this event type and urgency, or None."""
+    if hat is None:
+        return None
+    for reaction in hat.reactions:
+        if reaction.when == event.type and URGENCY_RANK[event.urgency] >= URGENCY_RANK[reaction.urgency_min]:
+            return reaction
+    return None
+
+
+def face_state_for(event: Event, hat=None) -> str:
+    reaction = reaction_for(event, hat)
+    if reaction is not None and reaction.face in FACES:
+        return reaction.face
+    return face_for_event(event)
+
+
+def frames_for_event(event: Event, hat=None) -> list[dict]:
+    """Frames the device should show for ``event``: a status phrase, plus a card for noteworthy events.
+
+    With a hat, its matching reaction supplies the wording (templates are filled from the event).
+    """
     phrase, show_card = _WORDING[event.type]
+    reaction = reaction_for(event, hat)
+    if reaction is not None and reaction.say:
+        tool = event.summary.split(":", 1)[0] if ":" in event.summary else ""
+        phrase = render(reaction.say, session=event.session_id, tool=tool, summary=event.summary) or phrase
     frames: list[dict] = [{"type": "status", "text": phrase}]
     if show_card:
         body = event.summary or phrase

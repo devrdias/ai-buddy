@@ -138,21 +138,21 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 ### Tests for User Story 3
 
-- [ ] T046 [P] [US3] Write unit tests for hat manifest validation (format version, unknown keys warned, missing faces fall back) in `tests/unit/test_hat_loader.py`
-- [ ] T047 [P] [US3] Write contract tests for the hat pack format against `specs/001-hat-desk-buddy/contracts/hat-pack.md` in `tests/contract/test_hat_pack.py`
-- [ ] T048 [P] [US3] Write unit tests for the reaction template rendering (`{session}`, `{tool}`, `{summary}` only; no code execution) in `tests/unit/test_templates.py`
+- [x] T046 [P] [US3] Write unit tests for hat manifest validation (format version, unknown keys warned, missing faces fall back) in `tests/unit/test_hat_loader.py`
+- [x] T047 [P] [US3] Write contract tests for the hat pack format against `specs/001-hat-desk-buddy/contracts/hat-pack.md` in `tests/contract/test_hat_pack.py`
+- [x] T048 [P] [US3] Write unit tests for the reaction template rendering (`{session}`, `{tool}`, `{summary}` only; no code execution) in `tests/unit/test_templates.py`
 
 ### Implementation for User Story 3
 
-- [ ] T049 [US3] Implement the hat loader and validator in `src/aibuddy/hats/loader.py`, making T046 and T047 pass
-- [ ] T050 [US3] Implement reaction rendering with a restricted template engine in `src/aibuddy/hats/templates.py`, making T048 pass
-- [ ] T051 [US3] Implement PNG to RGB565 conversion, fitted to the device's reported image box, in `src/aibuddy/hats/faces.py` (depends on spike T001)
-- [ ] T052 [US3] Implement manual hat switching (`aibuddy hat use <id>`) and active hat storage in `src/aibuddy/hats/active.py` and `src/aibuddy/cli.py`
-- [ ] T053 [P] [US3] Create the `default` hat in `hats/default/hat.yaml` with `hats/default/faces/` images
-- [ ] T054 [P] [US3] Create the `geek` hat in `hats/geek/hat.yaml`, `persona.md`, and `faces/`
-- [ ] T055 [P] [US3] Create the `coach` hat in `hats/coach/hat.yaml`, `persona.md`, and `faces/`
-- [ ] T056 [P] [US3] Create the `sentinel` hat in `hats/sentinel/hat.yaml`, `persona.md`, and `faces/`
-- [ ] T057 [US3] Implement `aibuddy hats --check` reporting broken hats and the fallback in `src/aibuddy/cli.py`
+- [x] T049 [US3] Implement the hat loader and validator in `src/aibuddy/hats/loader.py`, making T046 and T047 pass
+- [x] T050 [US3] Implement reaction rendering with a restricted template engine in `src/aibuddy/hats/templates.py`, making T048 pass
+- [x] T051 [US3] Implement PNG to RGB565 conversion, fitted to the device's reported image box, in `src/aibuddy/hats/faces.py` (depends on spike T001)
+- [x] T052 [US3] Implement manual hat switching (`aibuddy hat use <id>`) and active hat storage in `src/aibuddy/hats/active.py` and `src/aibuddy/cli.py`
+- [x] T053 [P] [US3] Create the `default` hat in `hats/default/hat.yaml` with `hats/default/faces/` images
+- [x] T054 [P] [US3] Create the `geek` hat in `hats/geek/hat.yaml`, `persona.md`, and `faces/`
+- [x] T055 [P] [US3] Create the `coach` hat in `hats/coach/hat.yaml`, `persona.md`, and `faces/`
+- [x] T056 [P] [US3] Create the `sentinel` hat in `hats/sentinel/hat.yaml`, `persona.md`, and `faces/`
+- [x] T057 [US3] Implement `aibuddy hats --check` reporting broken hats and the fallback in `src/aibuddy/cli.py`
 
 **Checkpoint**: US3 works. Two hats differ visibly for the same event (SC-004).
 
