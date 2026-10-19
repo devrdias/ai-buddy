@@ -18,6 +18,8 @@ _RULES = [
     (re.compile(r"(?i)\b(Bearer)\s+[A-Za-z0-9._~+/=-]+"), rf"\1 {REPLACEMENT}"),
     (re.compile(r"(?i)\b([A-Z0-9_]*(?:PASSWORD|SECRET|TOKEN|API_?KEY|PASSWD)[A-Z0-9_]*)=\S+"),
      rf"\1={REPLACEMENT}"),
+    # Command-line flags such as "--password hunter2".
+    (re.compile(r"(?i)(--?(?:password|passwd|secret|token|api-?key)\s+)\S+"), rf"\1{REPLACEMENT}"),
 ]
 
 
