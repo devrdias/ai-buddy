@@ -26,6 +26,8 @@ class Config:
     upstream_token: str | None = field(default=None, repr=False)
     hats_dir: Path = Path("hats")
     allow_lan: bool = False
+    quiet_start: str | None = None  # HH:MM, e.g. 22:00
+    quiet_end: str | None = None    # HH:MM, e.g. 07:00
 
     def __post_init__(self) -> None:
         if not 0 < self.listen_port < 65536:
@@ -52,6 +54,8 @@ _ENV = {
     "AIBUDDY_UPSTREAM_TOKEN": "upstream_token",
     "AIBUDDY_HATS_DIR": "hats_dir",
     "AIBUDDY_ALLOW_LAN": "allow_lan",
+    "AIBUDDY_QUIET_START": "quiet_start",
+    "AIBUDDY_QUIET_END": "quiet_end",
 }
 
 

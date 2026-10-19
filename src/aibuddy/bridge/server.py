@@ -10,6 +10,7 @@ from aiohttp import web
 
 from ..core.approval import ApprovalBroker, ApprovalRequest
 from ..core.events import Event
+from ..core.policy import QuietPolicy
 from ..core.status import DISCONNECTED_FRAMES, StatusTracker, face_state_for, frames_for_event
 from ..hats.faces import face_frames
 from ..hats.loader import HatLibrary
@@ -111,9 +112,15 @@ def device_reply_handler(broker: ApprovalBroker) -> Callable[[str], bool]:
 
 def publish_event(event: Event, *, tracker: StatusTracker, injector: Injector,
                   library: HatLibrary | None = None, active: Callable[[], str] | None = None,
-                  stream: int = 1) -> None:
-    """Record an event and push its frames to every attached device, in the active hat's voice and face."""
+                  stream: int = 1, policy: QuietPolicy | None = None, now: float | None = None) -> None:
+    """Record an event and push its frames to every attached device, in the active hat's voice and face.
+
+    During quiet hours a non-urgent event is held (it is still recorded) and shown after quiet time ends.
+    """
     tracker.record(event, now=event.ts)
+    if policy is not None and not policy.allows_speech(event, now=event.ts if now is None else now):
+        policy.hold(event, now=event.ts)
+        return
     hat = library.get(active()) if library is not None and active is not None else None
     frames: list[dict | bytes] = list(frames_for_event(event, hat))
     if library is not None:
@@ -121,6 +128,15 @@ def publish_event(event: Event, *, tracker: StatusTracker, injector: Injector,
         if face is not None:
             frames += face_frames(str(face), stream)
     injector.publish(frames)
+
+
+def release_held(*, tracker: StatusTracker, injector: Injector, policy: QuietPolicy,
+                 now: float, library: HatLibrary | None = None, active: Callable[[], str] | None = None) -> int:
+    """Show events held during quiet time, once quiet time is over. Returns how many were shown."""
+    released = policy.release(now=now)
+    for event in released:
+        publish_event(event, tracker=tracker, injector=injector, library=library, active=active)
+    return len(released)
 
 
 def announce_staleness(tracker: StatusTracker, injector: Injector, *, now: float) -> bool:

@@ -12,9 +12,10 @@ from aiohttp import web
 from websockets.asyncio.server import serve
 
 from . import __version__
-from .bridge.server import announce_staleness, device_reply_handler, make_app, publish_event
+from .bridge.server import announce_staleness, device_reply_handler, make_app, publish_event, release_held
 from .bridge.token import DEFAULT_TOKEN_PATH, load_or_create_token
 from .core.approval import ApprovalBroker
+from .core.policy import QuietPolicy
 from .hats.active import read_active, write_active
 from .hats.loader import load_hats
 from .core.config import Config, ConfigError, load_config
@@ -27,15 +28,19 @@ from .proxy.relay import SUBPROTOCOL, GadgetRelay
 STALENESS_CHECK_S = 15.0
 
 
-async def _watch_staleness(tracker: StatusTracker, injector: Injector) -> None:
+async def _watch_staleness(tracker: StatusTracker, injector: Injector, policy: QuietPolicy,
+                           library, active) -> None:
     while True:
         await asyncio.sleep(STALENESS_CHECK_S)
         announce_staleness(tracker, injector, now=time.time())
+        release_held(tracker=tracker, injector=injector, policy=policy, now=time.time(),
+                     library=library, active=active)
 
 
 async def _run(config: Config, token_path: Path) -> None:
     token = load_or_create_token(token_path)
     library = load_hats(config.hats_dir)
+    policy = QuietPolicy(start=config.quiet_start, end=config.quiet_end)
     injector = Injector()
     tracker = StatusTracker()
     broker = ApprovalBroker(on_prompt=injector.publish_prompt, on_close=injector.clear_prompt)
@@ -44,7 +49,7 @@ async def _run(config: Config, token_path: Path) -> None:
                         observer=transcript_observer(broker))
     app = make_app(token=token, broker=broker,
                    on_event=lambda event: publish_event(event, tracker=tracker, injector=injector,
-                                                        library=library, active=read_active))
+                                                        library=library, active=read_active, policy=policy))
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, "127.0.0.1", config.bridge_port).start()
@@ -52,7 +57,7 @@ async def _run(config: Config, token_path: Path) -> None:
         print(f"aibuddy {__version__}: devices on ws://{config.listen_host}:{config.listen_port}/gadget, "
               f"bridge on http://127.0.0.1:{config.bridge_port}/v1/event, upstream {config.upstream_url}",
               flush=True)
-        watcher = asyncio.create_task(_watch_staleness(tracker, injector))
+        watcher = asyncio.create_task(_watch_staleness(tracker, injector, policy, library, read_active))
         try:
             await asyncio.Future()
         finally:

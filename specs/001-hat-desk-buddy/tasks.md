@@ -188,12 +188,12 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 ### Tests for User Story 5
 
-- [ ] T064 [P] [US5] Write unit tests for quiet-hours policy (speak suppressed, urgent still shown, held items surfaced later) in `tests/unit/test_quiet_hours.py`
+- [x] T064 [P] [US5] Write unit tests for quiet-hours policy (speak suppressed, urgent still shown, held items surfaced later) in `tests/unit/test_quiet_hours.py`
 
 ### Implementation for User Story 5
 
-- [ ] T065 [US5] Implement the quiet-hours and do-not-disturb policy in `src/aibuddy/core/policy.py`, making T064 pass
-- [ ] T066 [US5] Wire the policy into the reaction path so speak flags are suppressed while quiet, in `src/aibuddy/hats/templates.py` and `src/aibuddy/proxy/inject.py`
+- [x] T065 [US5] Implement the quiet-hours and do-not-disturb policy in `src/aibuddy/core/policy.py`, making T064 pass
+- [x] T066 [US5] Wire the policy into the reaction path so speak flags are suppressed while quiet, in `src/aibuddy/hats/templates.py` and `src/aibuddy/proxy/inject.py`
 
 **Checkpoint**: US5 works.
 
