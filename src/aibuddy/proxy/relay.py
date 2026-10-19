@@ -30,7 +30,8 @@ class GadgetRelay:
     def __init__(self, *, upstream_url: str, upstream_token: str | None = None,
                  injector: Injector | None = None,
                  reply_handler: Callable[[str], bool] | None = None,
-                 observer: Callable[[str], list[str]] | None = None) -> None:
+                 observer: Callable[[str], list[str]] | None = None,
+                 device_observer: Callable[[str], None] | None = None) -> None:
         self.upstream_url = upstream_url
         self.upstream_token = upstream_token
         self.injector = injector
@@ -38,6 +39,8 @@ class GadgetRelay:
         self.reply_handler = reply_handler
         # observer sees Hermes frames and may return frames to send back upstream (for example cancel).
         self.observer = observer
+        # device_observer sees every text frame from the device (it never changes what is forwarded).
+        self.device_observer = device_observer
 
     async def handle(self, device: Any) -> None:
         """Serve one device connection by pairing it with a fresh upstream connection."""
@@ -91,6 +94,8 @@ class GadgetRelay:
                 if to_upstream and isinstance(message, str):
                     if self.reply_handler is not None and self.reply_handler(message):
                         continue
+                    if self.device_observer is not None:
+                        self.device_observer(message)
                     message = self._rewrite_hello(message)
                 if not to_upstream and isinstance(message, str) and self.observer is not None:
                     for frame in self.observer(message):

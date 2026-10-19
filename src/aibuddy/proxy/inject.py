@@ -36,6 +36,12 @@ class Injector:
         for queue in self._queues:
             queue.put_nowait(frame)
 
+    def notify(self, frames: list[dict]) -> None:
+        """Send frames to every attached device without replacing the latest status or prompt."""
+        for queue in self._queues:
+            for frame in frames:
+                queue.put_nowait(frame)
+
     def clear_prompt(self, frame: dict) -> None:
         """Send prompt.close to every device and forget the prompt."""
         self._prompt = None

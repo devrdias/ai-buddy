@@ -21,7 +21,7 @@ from .hats.loader import load_hats
 from .core.config import Config, ConfigError, load_config
 from .core.status import StatusTracker
 from .proxy.inject import Injector
-from .proxy.observe import transcript_observer
+from .proxy.observe import VoiceFallback, transcript_observer
 from .proxy.relay import SUBPROTOCOL, GadgetRelay
 
 
@@ -44,9 +44,16 @@ async def _run(config: Config, token_path: Path) -> None:
     injector = Injector()
     tracker = StatusTracker()
     broker = ApprovalBroker(on_prompt=injector.publish_prompt, on_close=injector.clear_prompt)
+    fallback = VoiceFallback(injector)
+    observe_transcripts = transcript_observer(broker)
+
+    def observe_hermes(text):
+        fallback.upstream_frame(text)
+        return observe_transcripts(text)
+
     relay = GadgetRelay(upstream_url=config.upstream_url, upstream_token=config.upstream_token,
                         injector=injector, reply_handler=device_reply_handler(broker),
-                        observer=transcript_observer(broker))
+                        observer=observe_hermes, device_observer=fallback.device_frame)
     app = make_app(token=token, broker=broker,
                    on_event=lambda event: publish_event(event, tracker=tracker, injector=injector,
                                                         library=library, active=read_active, policy=policy))
