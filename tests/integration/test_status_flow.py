@@ -14,7 +14,7 @@ from aibuddy.core.status import StatusTracker
 from aibuddy.proxy.inject import Injector
 from aibuddy.proxy.relay import GadgetRelay
 
-from tests.contract.test_gadget_relay import CHALLENGE, FakeUpstream, HELLO, WELCOME  # noqa: F401
+from tests.contract.test_gadget_relay import CHALLENGE, FakeUpstream, HELLO, WELCOME
 
 
 async def _read_until(ws, predicate, timeout=3.0):
@@ -73,3 +73,27 @@ async def test_going_stale_pushes_a_disconnected_face_once_and_replays_on_reconn
 
     fresh_queue = injector.attach()  # a device that reconnects now sees the disconnected state
     assert fresh_queue.get_nowait() == {"type": "status", "text": "Disconnected"}
+
+
+async def test_frames_published_before_a_device_connects_wait_for_the_handshake():
+    hub = FakeUpstream()
+    upstream = await serve(hub.handler, "127.0.0.1", 0)
+    upstream_url = f"ws://127.0.0.1:{upstream.sockets[0].getsockname()[1]}/gadget"
+    injector = Injector()
+    tracker = StatusTracker(stale_after_s=300)
+    relay = GadgetRelay(upstream_url=upstream_url, injector=injector)
+    relay_server = await serve(relay.handle, "127.0.0.1", 0)
+    relay_url = f"ws://127.0.0.1:{relay_server.sockets[0].getsockname()[1]}/gadget"
+    try:
+        publish_event(Event.create(type="done", session_id="abc", summary="Early"), tracker=tracker,
+                      injector=injector)
+        async with connect(relay_url) as device:
+            first = json.loads(await device.recv())
+            assert first == CHALLENGE  # no status frame may precede the challenge
+            await device.send(json.dumps(HELLO))
+            assert json.loads(await device.recv()) == WELCOME
+            status = await _read_until(device, lambda m: m.get("type") == "status")
+            assert status["text"] == "Done"
+    finally:
+        relay_server.close()
+        upstream.close()

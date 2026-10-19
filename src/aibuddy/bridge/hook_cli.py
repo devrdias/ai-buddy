@@ -17,8 +17,10 @@ from typing import IO
 from .token import DEFAULT_TOKEN_PATH
 
 DEFAULT_ENDPOINT = "http://127.0.0.1:8771/v1/event"
-SUMMARY_LIMIT = 200
-_TIMEOUT_S = 2.0
+# The bridge redacts the whole summary, so the hook must not cut it first (a cut can hide a secret's tail).
+SUMMARY_LIMIT = 2000
+# The bridge is on loopback; a short timeout keeps a stopped buddy from slowing every hook.
+_TIMEOUT_S = 0.5
 
 
 def build_payload(data: dict) -> dict | None:
@@ -42,6 +44,16 @@ def build_payload(data: dict) -> dict | None:
     }
 
 
+def _read_private_token(path: Path) -> str | None:
+    """The token, or None when the file is missing or readable by anyone but its owner."""
+    try:
+        if path.stat().st_mode & 0o077:
+            return None
+        return path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+
+
 def main(argv: list[str] | None = None, *, stdin: IO[str] | None = None, env: dict | None = None) -> int:
     env = os.environ if env is None else env
     try:
@@ -54,9 +66,8 @@ def main(argv: list[str] | None = None, *, stdin: IO[str] | None = None, env: di
     if payload is None:
         return 0
     token_path = Path(env.get("AIBUDDY_TOKEN_FILE", str(DEFAULT_TOKEN_PATH)))
-    try:
-        token = token_path.read_text(encoding="utf-8").strip()
-    except OSError:
+    token = _read_private_token(token_path)
+    if token is None:
         return 0
     endpoint = env.get("AIBUDDY_ENDPOINT", DEFAULT_ENDPOINT)
     request = urllib.request.Request(

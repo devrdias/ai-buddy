@@ -6,11 +6,13 @@ The one allowed change is the hello.token rewrite when an upstream token is conf
 
 from __future__ import annotations
 
+import asyncio
 import json
 
 import pytest
 from websockets.asyncio.client import connect
 from websockets.asyncio.server import serve
+from websockets.exceptions import ConnectionClosed
 
 from aibuddy.proxy.relay import GadgetRelay
 
@@ -129,3 +131,25 @@ async def test_hello_token_is_set_from_upstream_token_when_configured(upstream):
     finally:
         server.close()
         await server.wait_closed()
+
+
+async def test_failed_upstream_handshake_closes_the_device_with_1011():
+    async def refuse(reader, writer):
+        await reader.readuntil(b"\r\n\r\n")
+        writer.write(b"HTTP/1.1 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n")
+        await writer.drain()
+        writer.close()
+
+    bad = await asyncio.start_server(refuse, "127.0.0.1", 0)
+    bad_url = f"ws://127.0.0.1:{bad.sockets[0].getsockname()[1]}/gadget"
+    server, relay_url = await _start_relay(bad_url)
+    try:
+        async with connect(relay_url) as device:
+            with pytest.raises(ConnectionClosed) as info:
+                await device.recv()
+            assert info.value.rcvd is not None and info.value.rcvd.code == 1011
+    finally:
+        server.close()
+        await server.wait_closed()
+        bad.close()
+        await bad.wait_closed()

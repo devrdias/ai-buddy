@@ -38,3 +38,9 @@ def test_ordinary_text_is_unchanged():
 
 def test_empty_text_is_safe():
     assert redact("") == ""
+
+
+def test_space_separated_secret_flags_are_redacted():
+    out = redact("deploy --password hunter2 --api-key abc123 --token xyz")
+    assert "hunter2" not in out and "abc123" not in out and "xyz" not in out
+    assert "--password [REDACTED]" in out
