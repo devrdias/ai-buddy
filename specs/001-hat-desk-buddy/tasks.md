@@ -205,8 +205,8 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 **Independent Test**: follow the setup guide on a clean device and reach a connected Ready state.
 
-- [ ] T067 [US6] Write the device setup guide `docs/setup-device.md`, pointing at the SDK installer for flashing and the AI Buddy listen address for connection
-- [ ] T068 [P] [US6] Write the porting guide `docs/porting.md` for other boards, referencing the SDK porting docs
+- [x] T067 [US6] Write the device setup guide `docs/setup-device.md`, pointing at the SDK installer for flashing and the AI Buddy listen address for connection
+- [x] T068 [P] [US6] Write the porting guide `docs/porting.md` for other boards, referencing the SDK porting docs
 - [x] T069 [US6] Add a `aibuddy doctor` command in `src/aibuddy/cli.py` that checks the listen address, token file, and upstream reachability
 
 **Checkpoint**: US6 documented and checkable.
@@ -215,8 +215,8 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 ## Final Phase: Polish & Cross-Cutting Concerns
 
-- [ ] T070 [P] Write README with vision, quickstart, and credits to RegeneratusLabs/physical-hermes, the Hermes Gadget SDK, and xiaozhi-esp32 in `README.md`
-- [ ] T071 [P] Add `THIRD_PARTY_NOTICES.md` listing the SDK (MIT) and confirming no code is copied, in `THIRD_PARTY_NOTICES.md`
+- [x] T070 [P] Write README with vision, quickstart, and credits to RegeneratusLabs/physical-hermes, the Hermes Gadget SDK, and xiaozhi-esp32 in `README.md`
+- [x] T071 [P] Add `THIRD_PARTY_NOTICES.md` listing the SDK (MIT) and confirming no code is copied, in `THIRD_PARTY_NOTICES.md`
 - [ ] T072 Run the full test suite `pytest tests/` and fix any failures in the affected modules
 - [ ] T073 Validate every step in `specs/001-hat-desk-buddy/quickstart.md` by hand and update the document if a command differs
 - [ ] T074 Re-run the constitution check in `specs/001-hat-desk-buddy/plan.md` against the implemented code and record any deviation
