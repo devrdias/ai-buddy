@@ -166,15 +166,15 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 ### Tests for User Story 4
 
-- [ ] T058 [P] [US4] Write integration test that talk-audio frames pass through unchanged and the reply `reply` and `audio` messages reach the device, in `tests/integration/test_voice_relay.py`
-- [ ] T059 [P] [US4] Write integration test that `cancel` relays to Hermes and stops speech, in `tests/integration/test_cancel.py`
+- [x] T058 [P] [US4] Write integration test that talk-audio frames pass through unchanged and the reply `reply` and `audio` messages reach the device, in `tests/integration/test_voice_relay.py`
+- [x] T059 [P] [US4] Write integration test that `cancel` relays to Hermes and stops speech, in `tests/integration/test_cancel.py`
 
 ### Implementation for User Story 4
 
-- [ ] T060 [US4] Ensure the relay preserves binary audio channel frames in both directions in `src/aibuddy/proxy/relay.py`, making T058 pass
+- [x] T060 [US4] Ensure the relay preserves binary audio channel frames in both directions in `src/aibuddy/proxy/relay.py`, making T058 pass
 - [ ] T061 [US4] Implement the no-voice-engine fallback: when Hermes sends text only, show text and a notice explaining voice is not configured, in `src/aibuddy/proxy/inject.py`
 - [ ] T062 [US4] Map hat voice settings to Hermes voice options passed through, in `src/aibuddy/brain/hermes.py`
-- [ ] T063 [US4] Implement cancel relay (device `cancel` to Hermes) in `src/aibuddy/proxy/relay.py`, making T059 pass
+- [x] T063 [US4] Implement cancel relay (device `cancel` to Hermes) in `src/aibuddy/proxy/relay.py`, making T059 pass
 
 **Checkpoint**: US4 works with Hermes voice configured. Text-only fallback works without it.
 
@@ -217,7 +217,7 @@ Single Python project per plan.md: `src/aibuddy/`, `tests/`, `hats/` at reposito
 
 - [x] T070 [P] Write README with vision, quickstart, and credits to RegeneratusLabs/physical-hermes, the Hermes Gadget SDK, and xiaozhi-esp32 in `README.md`
 - [x] T071 [P] Add `THIRD_PARTY_NOTICES.md` listing the SDK (MIT) and confirming no code is copied, in `THIRD_PARTY_NOTICES.md`
-- [ ] T072 Run the full test suite `pytest tests/` and fix any failures in the affected modules
+- [x] T072 Run the full test suite `pytest tests/` and fix any failures in the affected modules
 - [ ] T073 Validate every step in `specs/001-hat-desk-buddy/quickstart.md` by hand and update the document if a command differs
 - [ ] T074 Re-run the constitution check in `specs/001-hat-desk-buddy/plan.md` against the implemented code and record any deviation
 

@@ -34,8 +34,10 @@ class FakeUpstream:
     def __init__(self):
         self.received: list = []
         self.hellos: list[dict] = []
+        self.connections: list = []
 
     async def handler(self, ws):
+        self.connections.append(ws)
         await ws.send(json.dumps(CHALLENGE))
         hello = json.loads(await ws.recv())
         self.hellos.append(hello)
