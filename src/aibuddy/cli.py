@@ -21,7 +21,7 @@ from .core.config import Config, ConfigError, load_config
 from .core.status import StatusTracker
 from .proxy.inject import Injector
 from .proxy.observe import transcript_observer
-from .proxy.relay import GadgetRelay
+from .proxy.relay import SUBPROTOCOL, GadgetRelay
 
 
 STALENESS_CHECK_S = 15.0
@@ -48,7 +48,7 @@ async def _run(config: Config, token_path: Path) -> None:
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, "127.0.0.1", config.bridge_port).start()
-    async with serve(relay.handle, config.listen_host, config.listen_port):
+    async with serve(relay.handle, config.listen_host, config.listen_port, subprotocols=[SUBPROTOCOL]):
         print(f"aibuddy {__version__}: devices on ws://{config.listen_host}:{config.listen_port}/gadget, "
               f"bridge on http://127.0.0.1:{config.bridge_port}/v1/event, upstream {config.upstream_url}",
               flush=True)

@@ -153,3 +153,32 @@ async def test_failed_upstream_handshake_closes_the_device_with_1011():
         await server.wait_closed()
         bad.close()
         await bad.wait_closed()
+
+
+async def test_relay_offers_the_protocol_subprotocol_to_the_upstream():
+    """The Hermes gadget hub rejects a handshake that does not offer hermes-gadget.v1 (HTTP 400)."""
+    seen = {}
+
+    async def strict_hub(ws):
+        if ws.subprotocol != "hermes-gadget.v1":
+            await ws.close(1002, "subprotocol required")
+            return
+        seen["ok"] = True
+        await ws.send(json.dumps(CHALLENGE))
+        await ws.recv()  # hello
+        await ws.send(json.dumps(WELCOME))
+        await ws.wait_closed()
+
+    from websockets.asyncio.server import ServerConnection  # noqa: F401  (documentation of the type)
+    hub = await serve(strict_hub, "127.0.0.1", 0, subprotocols=["hermes-gadget.v1"])
+    hub_url = f"ws://127.0.0.1:{hub.sockets[0].getsockname()[1]}/gadget"
+    server, relay_url = await _start_relay(hub_url)
+    try:
+        async with connect(relay_url) as device:
+            assert json.loads(await device.recv()) == CHALLENGE
+        assert seen.get("ok") is True
+    finally:
+        server.close()
+        await server.wait_closed()
+        hub.close()
+        await hub.wait_closed()
